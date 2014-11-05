@@ -511,6 +511,8 @@ class ZnPhp_Form
                     $attrs,
                     $value
                 );
+            } elseif ('html' == $type) { // static html
+                $input = $value;
             } else {
                 $input = sprintf(
                     '<input type="%s" id="%s" name="%s" value="%s" placeholder="%s" class="%s" %s />',
