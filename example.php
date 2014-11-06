@@ -13,6 +13,16 @@
 include 'ZnPhp_Form.php';
 
 $form = new ZnPhp_Form(array(
+    'groups' => array(
+        'personal_details' => array(
+            'label' => 'Personal Details',
+            'elements' => array('salutation', 'first_name', 'birth_date', 'gender'),
+        ),
+        'other_details' => array(
+            'label' => 'Other Details',
+            'elements' => array('vehicles', 'writeup', 'submit'),
+        ),
+    ),
     'elements' => array(
         'salutation' => array(
             'label' => 'Salutation',
@@ -76,10 +86,15 @@ if (isset($_POST['submit'])) {
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 
     <style>
-      label { display: block; }
       .required { color: red; }
       .description { font-style: italic; }
       .error { color: red; }
+
+      .group-title {
+        background-color: #808080;
+        color: white;
+        padding: 10px;
+      }
     </style>
   </head>
 
@@ -98,19 +113,18 @@ if (isset($_POST['submit'])) {
         <?php endif; ?>
 
         <form action="" method="post" class="form-horizontal">
-          <?php foreach ($form->getElements() as $name => $element): ?>
-            <?php
-            // Add Bootstrap class to element config
-            $element['labelClass'] .= 'col-sm-3 control-label';
-            if (!in_array($element['type'], array('checkbox', 'radio', 'submit'))) {
-                $element['elementClass'] .= 'form-control';
-            }
-            ?>
-            <div class="form-group">
-              <?php echo $form->renderLabel($name, $element); ?>
-              <div class="col-sm-9"><?php echo $form->renderElement($name, $element); ?></div>
-            </div>
-          <?php endforeach; ?>
+          <?php
+          foreach ($form->getGroups() as $name => $group) {
+              if ($group['label']) {
+                  printf('<div class="group-title">%s</div><br />' . "\n", $group['label']);
+              }
+              printf(
+                  '<div id="%s">%s</div>' . "\n",
+                  $name,
+                  $form->renderElements($group['elements'])
+              );
+          }
+          ?>
         </form>
       </div>
     </div>
