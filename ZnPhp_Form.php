@@ -2,9 +2,10 @@
 /**
  * Simple form class to handle config, validation and rendering for fast deployment on a PHP site without any framework
  *
- * @author Zion Ng <zion@intzone.com>
- * @link   https://github.com/zionsg/ZnPhp-Form for canonical source repository
- * @since  2014-11-05T13:00+08:00
+ * @author  Zion Ng <zion@intzone.com>
+ * @link    https://github.com/zionsg/ZnPhp-Form for canonical source repository
+ * @since   2014-11-05T13:00+08:00
+ * @version 1.0.0
  */
 
 class ZnPhp_Form
@@ -27,18 +28,19 @@ class ZnPhp_Form
      *              ),
      *              'elements' => array(
      *                  'element_1' => array( // element name - used for DOM id and input name as well
-     *                      'label'        => 'Element 1',
-     *                      'type'         => 'text',
-     *                      'value'        => '', // default value
-     *                      'options'      => array(), // value-option pairs for checkbox, radio and select elements
-     *                      'description'  => '',
-     *                      'placeholder'  => 'Type text here',
-     *                      'attributes'   => array('data-custom' => 'custom-value'),
-     *                      'required'     => true, // validator only runs if this is true
-     *                      'errorMessage' => 'Please enter required value', // default error message
-     *                      'validator'    => function ($value, $form) { return true; }, // return true or error message
-     *                      'labelClass'   => 'label-css-class',
-     *                      'elementClass' => 'element-css-class',
+     *                      'label'         => 'Element 1',
+     *                      'type'          => 'text',
+     *                      'value'         => '', // default value
+     *                      'options'       => array(), // value-option pairs for checkbox, radio and select elements
+     *                      'optionAsValue' => false, // if true, 'options' array(a, b) = array('a' => 'a', 'b' => 'b')
+     *                      'description'   => '',
+     *                      'placeholder'   => 'Type text here',
+     *                      'attributes'    => array('data-custom' => 'custom-value'),
+     *                      'required'      => true, // validator only runs if this is true
+     *                      'errorMessage'  => 'Please enter required value', // default error message
+     *                      'validator'     => function ($value, $form) { return true; }, // return true or error message
+     *                      'labelClass'    => 'label-css-class',
+     *                      'elementClass'  => 'element-css-class',
      *                      'labelRenderer'   => function ($name, $form) { return ''; },  // override default renderer
      *                      'elementRenderer' => function ($name, $form) { return ''; },  // override default renderer
      *                   ),
@@ -100,18 +102,19 @@ class ZnPhp_Form
      * @var array
      */
     protected $elementDefaults = array(
-        'label'        => '',
-        'type'         => 'text',
-        'value'        => '',
-        'options'      => array(),
-        'description'  => '',
-        'placeholder'  => '',
-        'attributes'   => array(),
-        'required'     => false,
-        'errorMessage' => 'Please enter required value',
-        'validator'    => null, // ie. no validator
-        'labelClass'   => '',
-        'elementClass' => '',
+        'label'         => '',
+        'type'          => 'text',
+        'value'         => '',
+        'options'       => array(),
+        'optionAsValue' => false, // ie. value must be stated for each option - array(value => option)
+        'description'   => '',
+        'placeholder'   => '',
+        'attributes'    => array(),
+        'required'      => false,
+        'errorMessage'  => 'Please enter required value',
+        'validator'     => null, // ie. no validator
+        'labelClass'    => '',
+        'elementClass'  => '',
         'labelRenderer'   => null, // ie. use default renderer
         'elementRenderer' => null, // ie. use default renderer
     );
@@ -378,6 +381,41 @@ class ZnPhp_Form
     }
 
     /**
+     * Render elements in Twitter Bootstrap 3 style
+     *
+     * @param  array  $elementNames Element names
+     * @param  string $labelWidth   Default = 'col-sm-3'. Grid class for label
+     * @param  string $elementWidth Default = 'col-sm-9'. Grid class for element
+     * @return string
+     */
+    public function renderElements(array $elementNames, $labelWidth = 'col-sm-3', $elementWidth = 'col-sm-9')
+    {
+        $output = '';
+
+        foreach ($elementNames as $name) {
+            // Add Bootstrap class to element config
+            $element = $this->getElement($name);
+            if (!$element) {
+                continue;
+            }
+
+            $element['labelClass'] .= $labelWidth . ' control-label';
+            if (!in_array($element['type'], array('checkbox', 'radio', 'submit'))) {
+                $element['elementClass'] .= 'form-control';
+            }
+            $output .= sprintf(
+                '<div class="form-group" for="%s">%s<div class="%s">%s</div></div>',
+                $name,
+                $this->renderLabel($name, $element),
+                $elementWidth,
+                $this->renderElement($name, $element)
+            );
+        }
+
+        return $output;
+    }
+
+    /**
      * Set default label and element renderer callbacks for all input types
      *
      * @return void
@@ -456,7 +494,11 @@ class ZnPhp_Form
             $inputs = array();
             $inputSeparator = $form->getInputSeparator();
             if ('checkbox' == $type) {
-                foreach ($element['options'] as $optionValue => $option) {
+                $options = $element['options'];
+                if ($element['optionAsValue']) {
+                    $options = array_combine($options, $options);
+                }
+                foreach ($options as $optionValue => $option) {
                     $isChecked = is_array($value) ? in_array($optionValue, $value) : ($value == $optionValue);
                     $inputs[] = sprintf(
                         '<input type="%s" name="%s[]" value="%s" class="%s" %s %s />%s',
@@ -471,7 +513,11 @@ class ZnPhp_Form
                 }
                 $input = implode($inputSeparator, $inputs);
             } elseif ('radio' == $type) {
-                foreach ($element['options'] as $optionValue => $option) {
+                $options = $element['options'];
+                if ($element['optionAsValue']) {
+                    $options = array_combine($options, $options);
+                }
+                foreach ($options as $optionValue => $option) {
                     $inputs[] = sprintf(
                         '<input type="%s" name="%s" value="%s" class="%s" %s %s />%s',
                         $element['type'],
@@ -485,6 +531,10 @@ class ZnPhp_Form
                 }
                 $input = implode($inputSeparator, $inputs);
             } elseif ('select' == $type) {
+                $options = $element['options'];
+                if ($element['optionAsValue']) {
+                    $options = array_combine($options, $options);
+                }
                 $input = sprintf(
                     '<select id="%s" name="%s" class="%s" %s />',
                     $name,
@@ -492,7 +542,7 @@ class ZnPhp_Form
                     $element['elementClass'],
                     $attrs
                 );
-                foreach ($element['options'] as $optionValue => $option) {
+                foreach ($options as $optionValue => $option) {
                     $input .= sprintf(
                         '<option value="%s" %s>%s</option>',
                         $optionValue,
