@@ -234,6 +234,24 @@ class ZnPhp_Form
     }
 
     /**
+     * Set form data
+     *
+     * @param  array $data
+     * @param  bool  $override Default = true. Whether to override existing data or to merge only those fields in $data
+     * @return this
+     */
+    public function setData($data, $override = true)
+    {
+        if ($override) {
+            $this->data = $data;
+        } else {
+            $this->data = array_merge($this->data, $data);
+        }
+
+        return $this;
+    }
+
+    /**
      * Get all form data
      *
      * @return array
@@ -241,6 +259,23 @@ class ZnPhp_Form
     public function getData()
     {
         return $this->data;
+    }
+
+    /**
+     * Set form value for specific element
+     *
+     * @param  string $elementName
+     * @param  mixed  $value
+     * @return this
+     */
+    public function setValue($elementName, $value)
+    {
+        // Check config for element and not data as data may be empty at point of call
+        if (isset($this->config['elements'][$elementName])) {
+            $this->data[$elementName] = $value;
+        }
+
+        return $this;
     }
 
     /**
@@ -285,7 +320,7 @@ class ZnPhp_Form
     public function isValid(array $data)
     {
         // Store form data and clear errors
-        $this->data = $data;
+        $this->setData($data);
         $this->errors = array();
 
         $isValid = true;
