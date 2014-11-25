@@ -21,14 +21,16 @@ class ZnPhp_Form
      *              'breakChainOnFailure' => false,    // whether to stop validation if one of the elements fail
      *              'groups' => array( // display groups
      *                  'group_1' => array( // group name - used for DOM id as well
-     *                      'label' => 'Group 1',
-     *                      'class' => 'group-css-class',
-     *                      'elements' => '*', // * to include all elements or array('element_1', ...)
+     *                      'label'        => 'Group 1', // may not be displayed, eg. used for reference in emails
+     *                      'displayLabel' => true,      // whether to display label or use empty string for label
+     *                      'class'        => 'group-css-class',
+     *                      'elements'     => '*', // * to include all elements or array('element_1', ...)
      *                  ),
      *              ),
      *              'elements' => array(
      *                  'element_1' => array( // element name - used for DOM id and input name as well
-     *                      'label'         => 'Element 1',
+     *                      'label'         => 'Element 1', // may not be displayed, eg. used for reference in emails
+     *                      'displayLabel'  => true,        // whether to display label or use empty string for label
      *                      'type'          => 'text',
      *                      'value'         => '', // default value
      *                      'options'       => array(), // value-option pairs for checkbox, radio and select elements
@@ -94,7 +96,12 @@ class ZnPhp_Form
      *
      * @var array
      */
-    protected $groupDefaults = array('label' => '', 'class' => '', 'elements' => array());
+    protected $groupDefaults = array(
+        'label'        => '',
+        'displayLabel' => true,
+        'class'        => '',
+        'elements'     => array(),
+    );
 
     /**
      * Element defaults
@@ -103,6 +110,7 @@ class ZnPhp_Form
      */
     protected $elementDefaults = array(
         'label'         => '',
+        'displayLabel'  => true,
         'type'          => 'text',
         'value'         => '',
         'options'       => array(),
@@ -485,7 +493,7 @@ class ZnPhp_Form
                 '<label for="%s" class="%s">%s</label>',
                 $name,
                 $element['labelClass'] . $required,
-                $element['label']
+                ($element['displayLabel'] ? $element['label'] : '')
             );
         };
     }
