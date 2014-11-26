@@ -5,7 +5,7 @@
  * @author  Zion Ng <zion@intzone.com>
  * @link    https://github.com/zionsg/ZnPhp-Form for canonical source repository
  * @since   2014-11-05T13:00+08:00
- * @version 1.0.0
+ * @version 2014-11-26T17:00+08:00
  */
 
 class ZnPhp_Form
@@ -134,9 +134,19 @@ class ZnPhp_Form
      */
     public function __construct(array $config)
     {
-        // Populate default label and element renderers
-        $this->setDefaultRenderers();
+        $this->setDefaultRenderers();  // populate default label and element renderers before setting config
+        $this->setConfig($config);
+    }
 
+    /**
+     * Normalize config and set config
+     *
+     * @param  array $config
+     * @param  bool  $override Default = true. Whether to override existing config or merge with it
+     * @return this
+     */
+    public function setConfig($config, $override = true)
+    {
         // Ensure array keys exist before storing config
         $config = array_merge($this->configDefaults, $config);
         foreach ($config['groups'] as $name => $group) {
@@ -146,7 +156,23 @@ class ZnPhp_Form
             $config['elements'][$name] = array_merge($this->elementDefaults, $element);
         }
 
-        $this->config = $config;
+        if ($override) {
+            $this->config = $config;
+        } else {
+            $this->config = array_merge($this->config, $config);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get normalized config
+     *
+     * @return array
+     */
+    public function getConfig()
+    {
+        return $this->config;
     }
 
     /**
