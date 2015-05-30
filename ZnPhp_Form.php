@@ -5,7 +5,7 @@
  * @author  Zion Ng <zion@intzone.com>
  * @link    https://github.com/zionsg/ZnPhp-Form for canonical source repository
  * @since   2014-11-05T13:00+08:00
- * @version 2014-11-26T17:00+08:00
+ * @version 2015-05-30T17:30+08:00
  */
 
 class ZnPhp_Form
@@ -38,20 +38,20 @@ class ZnPhp_Form
      *                      'description'   => '',
      *                      'placeholder'   => 'Type text here',
      *                      'attributes'    => array('data-custom' => 'custom-value'),
-     *                      'required'      => true, // validator only runs if this is true
+     *                      'required'      => true,
      *                      'errorMessage'  => 'Please enter required value', // default error message
-     *                      'validator'     => function ($value, $form) { return true; }, // return true or error message
+     *                      'validator'     => function ($value, $form) { return true; }, // return true or error string
      *                      'labelClass'    => 'label-css-class',
      *                      'elementClass'  => 'element-css-class',
      *                      'labelRenderer'   => function ($name, $form) { return ''; },  // override default renderer
      *                      'elementRenderer' => function ($name, $form) { return ''; },  // override default renderer
      *                   ),
      *              ),
-     *              'labelRenderers' => array( // label renderer for each input type
+     *              'labelRenderers' => array( // default label renderer for each input type
      *                  '*'      => function ($name, $element, $form) { return ''; }, // fallback if type not found
      *                  'button' => function ($name, $element, $form) { return ''; },
      *              ),
-     *              'elementRenderers' => array( // element renderer for each input type
+     *              'elementRenderers' => array( // default element renderer for each input type
      *                  '*'    => function ($name, $element, $form) { return ''; }, // fallback if type not be found
      *                  'text' => function ($name, $element, $form) { return '<input type="text" />'; },
      *              ),
@@ -362,9 +362,10 @@ class ZnPhp_Form
 
         foreach ($this->getElements() as $name => $element) {
             $value = isset($data[$name]) ? $data[$name] : null;
-            if ($element['required'] && (null === $value || '' === $value)) {
-                $result = $element['errorMessage'];
-            } else {
+
+            if (null === $value || '' === $value) { // if value is empty
+                $result = $element['required'] ? $element['errorMessage'] : true;
+            } else { // validator is called only if value is non-empty
                 $validator = $element['validator'];
                 if (null === $validator || !is_callable($validator)) {
                     continue;
@@ -372,7 +373,8 @@ class ZnPhp_Form
                 $result = $validator($value, $this);
             }
 
-            if ($result !== true) { // note that preg_match() does not always return boolean true/false
+            // if a validator uses preg_match(), it may not always return boolean true/false, hence the type check
+            if ($result !== true) {
                 $isValid = false;
                 $this->errors[$name] = $result ?: $element['errorMessage'];
                 if ($breakChainOnFailure) {
