@@ -5,7 +5,7 @@
  * @author  Zion Ng <zion@intzone.com>
  * @link    https://github.com/zionsg/ZnPhp-Form for canonical source repository
  * @since   2014-11-05T13:00+08:00
- * @version 2015-05-30T17:30+08:00
+ * @version 2015-05-30T17:40+08:00
  */
 
 class ZnPhp_Form
@@ -52,7 +52,7 @@ class ZnPhp_Form
      *                  'button' => function ($name, $element, $form) { return ''; },
      *              ),
      *              'elementRenderers' => array( // default element renderer for each input type
-     *                  '*'    => function ($name, $element, $form) { return ''; }, // fallback if type not be found
+     *                  '*'    => function ($name, $element, $form) { return ''; }, // fallback if type not found
      *                  'text' => function ($name, $element, $form) { return '<input type="text" />'; },
      *              ),
      *          )
